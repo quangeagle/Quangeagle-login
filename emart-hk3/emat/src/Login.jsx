@@ -134,7 +134,7 @@
 //             </div>
 //           </div>
 //         </div>
-//       </body>
+//       </body>      
 //       <Footer />
 //     </>
 //   );
@@ -142,60 +142,91 @@
 
 // export default Login;
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useUser } from './UserContext';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { updateUserInfo } = useUser();
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const checkLoginStatus = async () => {
-        try {
-            const response = await axios.get('http://localhost:3004/auth/verify', { withCredentials: true });
-            if (response.data.login) {
-                console.log('User đã đăng nhập:', response.data);
-                // Chuyển đến trang chủ nếu đã đăng nhập
-            } else {
-                console.log('User chưa đăng nhập');
-            }
-        } catch (error) {
-            console.error('Lỗi xác minh đăng nhập:', error);
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          throw new Error('Không có token xác thực');
         }
+
+        const response = await axios.get('http://localhost:3004/auth/verify', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.data.login) { // Sửa để kiểm tra đúng trường `login`
+          updateUserInfo(response.data.userId, response.data.username); // Cập nhật username
+          console.log('Trạng thái xác thực:', response.data);
+          navigate('/'); // Chuyển hướng đến trang chính
+        }
+      } catch (error) {
+        console.error('Lỗi xác minh đăng nhập:', error.response ? error.response.data : error.message);
+        setErrorMessage('Lỗi xác minh đăng nhập. Vui lòng thử lại.');
+      } finally {
+        setLoading(false);
+      }
     };
 
     checkLoginStatus();
-}, [navigate]);
+  }, [navigate, updateUserInfo]);
 
-
-useEffect(() => {
-  const handleCallback = async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    if (code) {
-      try {
-        const response = await axios.get(`http://localhost:3004/auth/callback?code=${code}`, { withCredentials: true });
-        const { token } = response.data;
-        if (token) {
-          localStorage.setItem('authToken', token);
-          navigate('/');
-        } else {
-          setErrorMessage('Không thể lấy token. Vui lòng thử lại.');
+  useEffect(() => {
+    const handleCallback = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      if (code) {
+        setLoading(true);
+        try {
+          const response = await axios.get(`http://localhost:3004/auth/callback?code=${code}`, { withCredentials: true });
+          
+          // Log toàn bộ nội dung phản hồi để kiểm tra
+          console.log('Nội dung phản hồi:', response.data);
+          
+          const { token, userId, username } = response.data; // Đảm bảo rằng bạn đang lấy đúng trường từ phản hồi
+          console.log('ID người dùng:', userId);
+          console.log('Tên người dùng:', username);
+      
+          if (token) {
+            localStorage.setItem('authToken', token);
+            handleLogin({ id: userId, name: username }); // Cập nhật với userId và username
+            navigate('/');
+          } else {
+            console.error('Không thể lấy token. Vui lòng thử lại.');
+            setErrorMessage('Không thể lấy token. Vui lòng thử lại.');
+          }
+        } catch (error) {
+          console.error('Lỗi trong quá trình callback: ' + error.message);
+          setErrorMessage('Lỗi trong quá trình callback. Vui lòng thử lại.');
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        setErrorMessage('Lỗi trong quá trình callback: ' + error.message);
+      } else {
+        console.error('Không có mã trong URL callback');
+        setErrorMessage('Không có mã trong URL callback.');
       }
-    } else {
-      setErrorMessage('Không có mã trong URL callback');
-    }
+    };
+
+    handleCallback();
+  }, [navigate]);
+
+  const handleLogin = (userData) => {
+    console.log('Thực hiện đăng nhập:', userData); // Log thông tin đăng nhập
+    updateUserInfo(userData.id, userData.name); // Cập nhật cả userId và username
   };
-  
-  handleCallback();
-}, [navigate]);
-
-    
-
-   
 
   const handleLoginRedirect = () => {
     const redirectUri = encodeURIComponent('http://localhost:5173/login'); 
@@ -206,6 +237,7 @@ useEffect(() => {
     <div>
       <h3>ĐĂNG NHẬP QUA SSO</h3>
       <button onClick={handleLoginRedirect}>Đăng nhập qua SSO Pointer</button>
+      {errorMessage && <p className="text-red-500">{errorMessage}</p>} {/* Hiển thị thông báo lỗi */}
     </div>
   );
 };

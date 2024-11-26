@@ -21,7 +21,7 @@ const Kho = () => {
     if (!showProducts) {
       // Gọi API lấy danh sách sản phẩm tồn kho (số lượng dưới 10)
       axios
-            get('http://localhost:3004/kho/low-stock-products') 
+            get('http://localhost:3006/kho/low-stock-products') 
         .then((response) => setLowStockProducts(response.data))
         .catch((error) => console.error('Lỗi khi tải dữ liệu:', error));  
     }

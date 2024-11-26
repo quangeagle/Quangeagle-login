@@ -7,7 +7,7 @@ const ListNCC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get('http://localhost:3004/supplier/seen') 
+    axios.get('http://localhost:3006/supplier/seen') 
       .then(res => {
         setSuppliers(res.data);
       })
@@ -15,7 +15,7 @@ const ListNCC = () => {
   }, []);
 
   const handleSupplierClick = (supplierId) => {
-    navigate(`/supplier/${supplierId}/categories`);
+    navigate(`/supplier/${supplierId}`);
   };
 
   return (

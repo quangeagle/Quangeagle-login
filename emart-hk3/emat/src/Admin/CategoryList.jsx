@@ -11,18 +11,18 @@ const CategoryList = () => {
 
   useEffect(() => {
     // Fetch categories by hanghoaId
-    axios.get(`http://localhost:3004/category/byhanghoa/${hanghoaId}`)
+    axios.get(`http://localhost:3005/category/byhanghoa/${hanghoaId}`)
       .then(res => setCategories(res.data))
       .catch(err => console.error('Error fetching categories:', err));
 
     // Fetch all hanghoas to display in the dropdown
-    axios.get('http://localhost:3004/hanghoa') // Assuming you have an endpoint to fetch all hanghoas
+    axios.get('http://localhost:3005/hanghoa/all') // Assuming you have an endpoint to fetch all hanghoas
       .then(res => setHanghoas(res.data))
       .catch(err => console.error('Error fetching hanghoas:', err));
   }, [hanghoaId]);
 
   const handleDeleteCategory = (categoryId) => {
-    axios.delete(`http://localhost:3004/category/delete/${categoryId}`)
+    axios.delete(`http://localhost:3005/category/delete/${categoryId}`)
       .then(() => {
         setCategories(categories.filter(category => category._id !== categoryId));
       })
@@ -34,7 +34,7 @@ const CategoryList = () => {
   };
 
   const handleUpdateCategory = () => {
-    axios.put(`http://localhost:3004/category/update/${editingCategory._id}`, editingCategory)
+    axios.put(`http://localhost:3005/category/update/${editingCategory._id}`, editingCategory)
       .then(res => {
         setCategories(categories.map(category => category._id === res.data._id ? res.data : category));
         setEditingCategory(null);

@@ -356,7 +356,8 @@ import { useUser } from './UserContext';
 function DetailProduct() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { userId } = useUser(); 
+  const { user } = useUser(); // Lấy user từ UserContext
+const userId = user.id;
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
@@ -386,6 +387,7 @@ function DetailProduct() {
   
 
   const addToCart = () => {
+   
     if (userId) {
       axios.post('http://localhost:3004/cart/add', { userId, productId: product._id, quantity })
         .then(response => {
@@ -397,6 +399,7 @@ function DetailProduct() {
         })
         .catch(error => {
           console.error('Error adding to cart:', error);
+          console.log('User ID:', userId); 
         });
     } else {
      
@@ -491,9 +494,9 @@ function DetailProduct() {
                     <i className='fas fa-info-circle'></i> Số lượng tối đa mua trong ngày là 24
                   </div>
                 )}
-                {/* onClick={addToCart}  */}
+               
                 <div className='pl-2'>
-                  <button className='h-8 px-4 py-1 bg-yellow-500 text-white rounded ml-2'>Thêm vào giỏ</button>
+                  <button  onClick={addToCart}  className='h-8 px-4 py-1 bg-yellow-500 text-white rounded ml-2'>Thêm vào giỏ</button>
                   <button className='h-8 px-4 py-1 bg-yellow-600 text-white rounded ml-2'>Mua ngay</button>
                   <button
         onClick={addToLikeList1}

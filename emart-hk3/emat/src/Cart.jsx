@@ -376,7 +376,8 @@ import { useUser } from './UserContext';
 
 const ShoppingCart = () => {
   const [cartItems, setCartItems] = useState([]);
-  const { userId } = useUser();
+  const { user } = useUser(); // Lấy user từ UserContext
+const userId = user.id;
 
   useEffect(() => {
     if (userId) {
@@ -481,11 +482,11 @@ const ShoppingCart = () => {
               <p className="text-lg text-red-500">{calculateTotal()}₫</p>
             </div>
           </div>
-          {/* <Link to='/ship'> */}
+          <Link to='/ship'>
             <button className="w-full bg-yellow-400 text-white py-2 rounded-md">
               Thanh Toán
             </button>
-          {/* </Link> */}
+          </Link>
         </div>
       </div>
       <Footer />
